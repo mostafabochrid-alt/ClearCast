@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClearMic | Pro Audio Enhancer</title>
+    <title>ClearMic | Pro Audio Enhancer & Noise Remover</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Two-Color Theme: Zinc 950 (Background) & Cyan 500 (Accent) */
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
         
         body { 
@@ -33,80 +32,166 @@
         }
         
         /* Custom Toggle Switch */
-        .toggle-checkbox:checked {
-            right: 0;
-            border-color: #06b6d4;
-        }
-        .toggle-checkbox:checked + .toggle-label {
-            background-color: #06b6d4;
-        }
+        .toggle-checkbox:checked { right: 0; border-color: #06b6d4; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #06b6d4; }
+
+        /* Page System */
+        .page-content { display: none; }
+        .page-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 selection:bg-cyan-500/30">
+<body class="min-h-screen flex flex-col items-center selection:bg-cyan-500/30">
 
-    <main class="w-full max-w-2xl">
-        <!-- Header -->
-        <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold tracking-tighter mb-2">
-                Clear<span class="text-cyan">Mic</span>
-            </h1>
-            <p class="text-zinc-500 text-sm">Real-time Neural Audio Enhancement</p>
-        </header>
+    <!-- Navbar -->
+    <nav class="w-full max-w-4xl flex flex-wrap items-center justify-between p-6">
+        <div class="text-2xl font-bold tracking-tighter cursor-pointer" onclick="switchPage('app')">
+            Clear<span class="text-cyan">Mic</span>
+        </div>
+        <div class="flex gap-4 text-sm font-bold text-zinc-500">
+            <button onclick="switchPage('app')" class="hover:text-cyan transition" id="nav-app">Studio</button>
+            <button onclick="switchPage('how')" class="hover:text-cyan transition" id="nav-how">How it Works</button>
+            <button onclick="switchPage('about')" class="hover:text-cyan transition" id="nav-about">About Us</button>
+            <button onclick="switchPage('privacy')" class="hover:text-cyan transition" id="nav-privacy">Privacy</button>
+        </div>
+    </nav>
 
-        <!-- Main Studio Box -->
-        <div class="glass-panel rounded-3xl p-6 md:p-10 shadow-2xl shadow-cyan-500/5">
-            
-            <!-- Upload Area (Fixed using native HTML Label to bypass Android blocks) -->
-            <label for="audioInput" id="uploadArea" class="border-2 border-dashed border-cyan-500/30 rounded-2xl p-12 text-center hover:bg-cyan-500/5 transition cursor-pointer flex flex-col items-center justify-center min-h-[250px] w-full block">
-                <svg class="w-12 h-12 text-cyan mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                <h3 class="text-xl font-bold mb-2">Import Audio File</h3>
-                <p class="text-zinc-500 text-sm">Select any recording to clean it instantly.</p>
-                <!-- Native input hidden with style instead of tailwind to prevent bugs -->
-                <input type="file" id="audioInput" accept="audio/*,video/mp4,video/webm" style="display:none;">
-            </label>
+    <main class="w-full max-w-3xl p-4 flex-1">
+        
+        <!-- ================= APP PAGE (STUDIO) ================= -->
+        <div id="page-app" class="page-content active">
+            <header class="text-center mb-8">
+                <h1 class="text-4xl md:text-5xl font-bold tracking-tighter mb-2">Real-time Audio <span class="text-cyan">Purifier</span></h1>
+                <p class="text-zinc-500 text-sm">Remove background noise locally in your browser. 100% Free.</p>
+            </header>
 
-            <!-- Editor Area (Hidden by default) -->
-            <div id="editorArea" class="hidden flex flex-col gap-6">
-                
-                <!-- Info Bar -->
-                <div class="flex justify-between items-center bg-zinc-900/80 px-4 py-3 rounded-xl border border-zinc-800">
-                    <span id="fileName" class="text-sm font-bold truncate max-w-[200px] md:max-w-[300px]">recording.mp3</span>
-                    <button onclick="resetApp()" class="text-xs text-zinc-500 hover:text-cyan transition">Upload New</button>
-                </div>
+            <div class="glass-panel rounded-3xl p-6 md:p-8 shadow-2xl shadow-cyan-500/5 mb-8">
+                <!-- Upload Area -->
+                <label for="audioInput" id="uploadArea" class="border-2 border-dashed border-cyan-500/30 rounded-2xl p-10 text-center hover:bg-cyan-500/5 transition cursor-pointer flex flex-col items-center justify-center min-h-[200px] w-full block">
+                    <svg class="w-10 h-10 text-cyan mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    <h3 class="text-xl font-bold mb-2">Import Audio File</h3>
+                    <p class="text-zinc-500 text-xs">Supports MP3, WAV, M4A, MP4</p>
+                    <input type="file" id="audioInput" accept="audio/*,video/mp4,video/webm" style="display:none;">
+                </label>
 
-                <!-- Visualizer -->
-                <div class="relative w-full">
-                    <canvas id="visualizer"></canvas>
-                    <div id="timeDisplay" class="absolute bottom-2 right-3 text-xs font-bold text-cyan bg-zinc-900/80 px-2 py-1 rounded">00:00 / 00:00</div>
-                </div>
-
-                <!-- Controls -->
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                    
-                    <!-- Play Button -->
-                    <button id="playBtn" class="w-16 h-16 bg-cyan hover:bg-cyan-400 text-zinc-950 rounded-full flex items-center justify-center transition shadow-[0_0_20px_rgba(6,182,212,0.4)] mx-auto md:mx-0">
-                        <svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                    </button>
-
-                    <!-- Enhancement Toggle -->
-                    <div class="flex items-center gap-4 bg-zinc-900/80 px-6 py-4 rounded-2xl border border-zinc-800 w-full md:w-auto justify-center">
-                        <span class="text-sm font-bold text-zinc-400" id="modeOriginal">Original</span>
-                        
-                        <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
-                            <input type="checkbox" name="toggle" id="enhanceToggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-zinc-900 border-4 border-zinc-700 appearance-none cursor-pointer transition-all duration-300 z-10" checked/>
-                            <label for="enhanceToggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-zinc-700 cursor-pointer transition-colors duration-300"></label>
-                        </div>
-                        
-                        <span class="text-sm font-bold text-cyan" id="modeCleaned">Cleaned</span>
+                <!-- Editor Area -->
+                <div id="editorArea" class="hidden flex flex-col gap-6">
+                    <div class="flex justify-between items-center bg-zinc-900/80 px-4 py-3 rounded-xl border border-zinc-800">
+                        <span id="fileName" class="text-sm font-bold truncate max-w-[200px]">recording.mp3</span>
+                        <button onclick="resetApp()" class="text-xs font-bold text-red-400 hover:text-red-300 transition">Close File</button>
                     </div>
 
+                    <div class="relative w-full">
+                        <canvas id="visualizer"></canvas>
+                        <div id="timeDisplay" class="absolute bottom-2 right-3 text-xs font-bold text-cyan bg-zinc-900/80 px-2 py-1 rounded">00:00 / 00:00</div>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <button id="playBtn" class="w-14 h-14 bg-cyan hover:bg-cyan-400 text-zinc-950 rounded-full flex items-center justify-center transition mx-auto md:mx-0">
+                            <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                        </button>
+
+                        <div class="flex items-center gap-3 bg-zinc-900/80 px-4 py-2 rounded-2xl border border-zinc-800">
+                            <span class="text-xs font-bold text-zinc-400" id="modeOriginal">Raw</span>
+                            <div class="relative inline-block w-10 align-middle select-none">
+                                <input type="checkbox" id="enhanceToggle" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-zinc-900 border-2 border-zinc-700 appearance-none cursor-pointer transition-all duration-300 z-10" checked/>
+                                <label for="enhanceToggle" class="toggle-label block overflow-hidden h-5 rounded-full bg-zinc-700 cursor-pointer transition-colors duration-300"></label>
+                            </div>
+                            <span class="text-xs font-bold text-cyan" id="modeCleaned">Purified</span>
+                        </div>
+                        
+                        <!-- Download Button -->
+                        <button id="downloadBtn" onclick="downloadAudio()" class="w-full md:w-auto bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white text-sm font-bold px-6 py-3 rounded-xl transition flex justify-center items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Export Master
+                        </button>
+                    </div>
                 </div>
             </div>
 
+            <!-- History Section -->
+            <div id="historySection" class="hidden">
+                <h3 class="text-sm font-bold text-zinc-500 mb-3 uppercase tracking-wider">Recent Sessions</h3>
+                <div id="historyList" class="flex flex-col gap-2">
+                    <!-- History items will appear here -->
+                </div>
+            </div>
         </div>
+
+        <!-- ================= HOW IT WORKS PAGE ================= -->
+        <div id="page-how" class="page-content glass-panel rounded-3xl p-8 md:p-12">
+            <h2 class="text-3xl font-bold mb-6">How Clear<span class="text-cyan">Mic</span> Works</h2>
+            <div class="space-y-6 text-zinc-400 text-sm leading-relaxed">
+                <p>Unlike traditional tools that force you to wait for slow server uploads, ClearMic runs a highly optimized Digital Signal Processing (DSP) engine entirely within your browser.</p>
+                <div class="grid md:grid-cols-2 gap-4 mt-6">
+                    <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+                        <strong class="text-cyan block mb-1">1. Local Decoding</strong>
+                        Your device's CPU decodes the audio locally, guaranteeing absolute privacy.
+                    </div>
+                    <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+                        <strong class="text-cyan block mb-1">2. Frequency Filtering</strong>
+                        We apply real-time Highpass (removes rumble) and Lowpass (removes hiss) filters.
+                    </div>
+                    <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+                        <strong class="text-cyan block mb-1">3. Dynamic Compression</strong>
+                        Levels out the human voice to meet professional podcast broadcasting standards.
+                    </div>
+                    <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+                        <strong class="text-cyan block mb-1">4. Instant Export</strong>
+                        The cleaned stream is captured and packaged into a high-quality WAV file instantly.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ABOUT US PAGE ================= -->
+        <div id="page-about" class="page-content glass-panel rounded-3xl p-8 md:p-12">
+            <h2 class="text-3xl font-bold mb-6">About Us</h2>
+            <div class="space-y-4 text-zinc-400 text-sm leading-relaxed">
+                <p>ClearMic was created to solve a singular, frustrating problem: fixing bad audio without paying expensive monthly subscriptions.</p>
+                <p>We believe that high-quality content creation should be accessible to everyone, from professional digital agencies to independent podcasters and students. By leveraging modern Web Audio API technologies, we've built a platform that democratizes studio-quality sound mastering.</p>
+                <p>Our mission is simple: provide lightning-fast, privacy-first, and completely free audio enhancement tools for the creator economy.</p>
+            </div>
+        </div>
+
+        <!-- ================= PRIVACY POLICY PAGE ================= -->
+        <div id="page-privacy" class="page-content glass-panel rounded-3xl p-8 md:p-12">
+            <h2 class="text-3xl font-bold mb-6">Privacy Policy & Terms</h2>
+            <div class="space-y-6 text-zinc-400 text-sm leading-relaxed">
+                <div>
+                    <h3 class="text-white font-bold mb-2">1. Zero Data Collection</h3>
+                    <p>When you use ClearMic, your audio and video files <strong>never leave your device</strong>. All processing is done client-side within your browser using WebAssembly and Javascript. We do not store, intercept, or analyze your personal content.</p>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold mb-2">2. Google AdSense & Cookies</h3>
+                    <p>To keep this service 100% free, we utilize Google AdSense to display advertisements. Google and third-party vendors use cookies to serve ads based on your prior visits to our website. You can opt out of personalized advertising by visiting Google's Ad Settings.</p>
+                </div>
+                <div>
+                    <h3 class="text-white font-bold mb-2">3. Terms of Service</h3>
+                    <p>ClearMic is provided "as is" without warranty of any kind. You are free to use the exported audio files for both personal and commercial projects without attribution.</p>
+                </div>
+            </div>
+        </div>
+
     </main>
 
+    <footer class="w-full text-center py-6 text-xs font-bold text-zinc-600 mt-auto">
+        &copy; 2026 ClearMic. Built for Creators.
+    </footer>
+
     <script>
+        // --- Page Navigation System ---
+        function switchPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('text-cyan'));
+            
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.getElementById('nav-' + pageId).classList.add('text-cyan');
+            window.scrollTo(0, 0);
+        }
+        document.getElementById('nav-app').classList.add('text-cyan'); // Default active
+
+        // --- Studio Variables ---
         const uploadArea = document.getElementById('uploadArea');
         const audioInput = document.getElementById('audioInput');
         const editorArea = document.getElementById('editorArea');
@@ -116,39 +201,51 @@
         const canvas = document.getElementById('visualizer');
         const canvasCtx = canvas.getContext('2d');
         const timeDisplay = document.getElementById('timeDisplay');
+        const historySection = document.getElementById('historySection');
+        const historyList = document.getElementById('historyList');
 
-        // Audio System Variables
         const audioElement = new Audio();
         audioElement.crossOrigin = "anonymous";
         let audioCtx, source, analyser;
         let highpass, lowpass, compressor;
-        let isPlaying = false;
-        let animationId;
+        let isPlaying = false, animationId;
+        let currentFileName = "";
+        let mediaRecorder;
+        let recordedChunks = [];
 
-        // UI Interactions - Native file input handling
+        // --- File Handling & History ---
         audioInput.addEventListener('change', (e) => {
             if (e.target.files.length) initStudio(e.target.files[0]);
         });
 
-        // Initialize Studio
         function initStudio(file) {
+            currentFileName = file.name;
             uploadArea.classList.add('hidden');
             editorArea.classList.remove('hidden');
-            fileNameDisplay.innerText = file.name;
+            fileNameDisplay.innerText = currentFileName;
             
-            // Safe Load via Object URL
             const objectUrl = URL.createObjectURL(file);
             audioElement.src = objectUrl;
             
-            // Setup Canvas size
             setTimeout(() => {
                 canvas.width = canvas.offsetWidth;
                 canvas.height = canvas.offsetHeight;
                 drawFlatLine();
             }, 100);
+
+            addToHistory(currentFileName);
         }
 
-        // Setup Web Audio API (Must be triggered on user click)
+        function addToHistory(name) {
+            historySection.classList.remove('hidden');
+            const item = document.createElement('div');
+            item.className = "bg-zinc-900/50 p-3 rounded-lg border border-zinc-800 text-xs text-zinc-400 flex items-center justify-between";
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            item.innerHTML = `<span><span class="text-cyan font-bold mr-2">✓</span> ${name}</span> <span>${time}</span>`;
+            historyList.prepend(item);
+        }
+
+        // --- Audio Processing Engine ---
         function setupAudioNodes() {
             if (audioCtx) return; 
 
@@ -156,152 +253,147 @@
             source = audioCtx.createMediaElementSource(audioElement);
             analyser = audioCtx.createAnalyser();
             
-            // Studio Filters for Noise Reduction
-            highpass = audioCtx.createBiquadFilter();
-            highpass.type = 'highpass';
-            highpass.frequency.value = 95;
-
-            lowpass = audioCtx.createBiquadFilter();
-            lowpass.type = 'lowpass';
-            lowpass.frequency.value = 10000;
-
+            // Filters
+            highpass = audioCtx.createBiquadFilter(); highpass.type = 'highpass'; highpass.frequency.value = 95;
+            lowpass = audioCtx.createBiquadFilter(); lowpass.type = 'lowpass'; lowpass.frequency.value = 10000;
             compressor = audioCtx.createDynamicsCompressor();
-            compressor.threshold.value = -24;
-            compressor.knee.value = 30;
-            compressor.ratio.value = 12;
-            compressor.attack.value = 0.003;
-            compressor.release.value = 0.25;
+            compressor.threshold.value = -24; compressor.knee.value = 30; compressor.ratio.value = 12;
 
             analyser.fftSize = 256;
-
             routeAudio();
         }
 
         function routeAudio() {
             if (!audioCtx) return;
-            source.disconnect();
-            highpass.disconnect();
-            lowpass.disconnect();
-            compressor.disconnect();
-            analyser.disconnect();
+            source.disconnect(); highpass.disconnect(); lowpass.disconnect(); compressor.disconnect(); analyser.disconnect();
 
             if (enhanceToggle.checked) {
-                // Cleaned Mode
-                source.connect(highpass);
-                highpass.connect(lowpass);
-                lowpass.connect(compressor);
-                compressor.connect(analyser);
-                analyser.connect(audioCtx.destination);
+                source.connect(highpass); highpass.connect(lowpass); lowpass.connect(compressor); compressor.connect(analyser); analyser.connect(audioCtx.destination);
             } else {
-                // Original Mode
-                source.connect(analyser);
-                analyser.connect(audioCtx.destination);
+                source.connect(analyser); analyser.connect(audioCtx.destination);
             }
         }
 
-        // Toggle Listener
         enhanceToggle.addEventListener('change', (e) => {
-            const modeOriginal = document.getElementById('modeOriginal');
-            const modeCleaned = document.getElementById('modeCleaned');
-            
-            if (e.target.checked) {
-                modeCleaned.className = "text-sm font-bold text-cyan";
-                modeOriginal.className = "text-sm font-bold text-zinc-600";
-            } else {
-                modeOriginal.className = "text-sm font-bold text-zinc-100";
-                modeCleaned.className = "text-sm font-bold text-zinc-600";
-            }
+            document.getElementById('modeCleaned').className = e.target.checked ? "text-xs font-bold text-cyan" : "text-xs font-bold text-zinc-600";
+            document.getElementById('modeOriginal').className = !e.target.checked ? "text-xs font-bold text-cyan" : "text-xs font-bold text-zinc-600";
             routeAudio();
         });
 
-        // Play/Pause Controller
+        // --- Playback Controls ---
         playBtn.addEventListener('click', () => {
             setupAudioNodes();
-            
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
 
             if (isPlaying) {
                 audioElement.pause();
-                playBtn.innerHTML = '<svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
+                playBtn.innerHTML = '<svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
                 cancelAnimationFrame(animationId);
             } else {
                 audioElement.play();
-                playBtn.innerHTML = '<svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
+                playBtn.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
                 drawVisualizer();
             }
             isPlaying = !isPlaying;
         });
 
-        // Audio Time Updater
         audioElement.addEventListener('timeupdate', () => {
-            const current = formatTime(audioElement.currentTime);
-            const total = formatTime(audioElement.duration || 0);
-            timeDisplay.innerText = `${current} / ${total}`;
+            timeDisplay.innerText = `${formatTime(audioElement.currentTime)} / ${formatTime(audioElement.duration || 0)}`;
         });
 
         audioElement.addEventListener('ended', () => {
             isPlaying = false;
-            playBtn.innerHTML = '<svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
+            playBtn.innerHTML = '<svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
             cancelAnimationFrame(animationId);
             drawFlatLine();
         });
 
         function formatTime(seconds) {
             if (isNaN(seconds)) return "00:00";
-            const min = Math.floor(seconds / 60);
-            const sec = Math.floor(seconds % 60);
-            return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+            return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${Math.floor(seconds % 60).toString().padStart(2, '0')}`;
         }
 
-        // Custom Visualizer
+        // --- Visualizer ---
         function drawFlatLine() {
-            canvasCtx.fillStyle = '#09090b';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = '#06b6d4';
-            canvasCtx.beginPath();
-            canvasCtx.moveTo(0, canvas.height / 2);
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
-            canvasCtx.stroke();
+            canvasCtx.fillStyle = '#09090b'; canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            canvasCtx.lineWidth = 2; canvasCtx.strokeStyle = '#06b6d4';
+            canvasCtx.beginPath(); canvasCtx.moveTo(0, canvas.height / 2); canvasCtx.lineTo(canvas.width, canvas.height / 2); canvasCtx.stroke();
         }
 
         function drawVisualizer() {
             animationId = requestAnimationFrame(drawVisualizer);
             if(!analyser) return;
-
             const bufferLength = analyser.frequencyBinCount;
             const dataArray = new Uint8Array(bufferLength);
             analyser.getByteTimeDomainData(dataArray);
 
-            canvasCtx.fillStyle = '#09090b';
-            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-            canvasCtx.lineWidth = 3;
-            canvasCtx.strokeStyle = enhanceToggle.checked ? '#06b6d4' : '#52525b';
+            canvasCtx.fillStyle = '#09090b'; canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            canvasCtx.lineWidth = 3; canvasCtx.strokeStyle = enhanceToggle.checked ? '#06b6d4' : '#52525b';
             canvasCtx.beginPath();
 
-            const sliceWidth = canvas.width * 1.0 / bufferLength;
-            let x = 0;
-
+            const sliceWidth = canvas.width * 1.0 / bufferLength; let x = 0;
             for (let i = 0; i < bufferLength; i++) {
-                const v = dataArray[i] / 128.0;
-                const y = v * canvas.height / 2;
-                if (i === 0) canvasCtx.moveTo(x, y);
-                else canvasCtx.lineTo(x, y);
+                const y = (dataArray[i] / 128.0) * canvas.height / 2;
+                if (i === 0) canvasCtx.moveTo(x, y); else canvasCtx.lineTo(x, y);
                 x += sliceWidth;
             }
-            canvasCtx.lineTo(canvas.width, canvas.height / 2);
-            canvasCtx.stroke();
+            canvasCtx.lineTo(canvas.width, canvas.height / 2); canvasCtx.stroke();
         }
 
+        // --- Download Engine (Stream Recording) ---
+        function downloadAudio() {
+            if (!audioCtx) setupAudioNodes();
+            const btn = document.getElementById('downloadBtn');
+            btn.innerHTML = `<span class="animate-pulse">Recording Stream... Please wait.</span>`;
+            btn.disabled = true;
+
+            // Create a MediaStream destination from our processed audio
+            const dest = audioCtx.createMediaStreamDestination();
+            
+            // Connect routing to destination
+            if (enhanceToggle.checked) {
+                compressor.connect(dest);
+            } else {
+                analyser.connect(dest);
+            }
+
+            mediaRecorder = new MediaRecorder(dest.stream);
+            recordedChunks = [];
+
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ClearMic_${currentFileName.split('.')[0]}.webm`;
+                a.click();
+                
+                btn.innerHTML = `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> Export Master`;
+                btn.disabled = false;
+                
+                // Reconnect to speakers
+                if (enhanceToggle.checked) compressor.connect(analyser);
+                else analyser.connect(audioCtx.destination);
+            };
+
+            // Start playing from beginning and record
+            audioElement.currentTime = 0;
+            audioElement.play();
+            mediaRecorder.start();
+
+            audioElement.onended = () => {
+                mediaRecorder.stop();
+                audioElement.onended = null; // reset
+            };
+        }
+
+        // --- Reset ---
         function resetApp() {
-            audioElement.pause();
-            audioElement.src = "";
-            editorArea.classList.add('hidden');
-            uploadArea.classList.remove('hidden');
+            audioElement.pause(); audioElement.src = "";
+            editorArea.classList.add('hidden'); uploadArea.classList.remove('hidden');
             isPlaying = false;
-            playBtn.innerHTML = '<svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
+            playBtn.innerHTML = '<svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
             if(animationId) cancelAnimationFrame(animationId);
             audioInput.value = '';
         }
