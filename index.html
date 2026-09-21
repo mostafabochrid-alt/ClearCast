@@ -10,7 +10,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap');
         
         body { 
-            background-color: #09090b; /* Deep Black */
+            background-color: #09090b; 
             color: #fafafa; 
             font-family: 'Space Grotesk', sans-serif; 
         }
@@ -56,15 +56,14 @@
         <!-- Main Studio Box -->
         <div class="glass-panel rounded-3xl p-6 md:p-10 shadow-2xl shadow-cyan-500/5">
             
-            <!-- Upload Area -->
-            <div id="uploadArea" class="border-2 border-dashed border-cyan-500/30 rounded-2xl p-12 text-center hover:bg-cyan-500/5 transition cursor-pointer flex flex-col items-center justify-center min-h-[250px]">
-                <svg class="w-12 h-12 text-cyan mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <!-- Upload Area (Fixed using native HTML Label to bypass Android blocks) -->
+            <label for="audioInput" id="uploadArea" class="border-2 border-dashed border-cyan-500/30 rounded-2xl p-12 text-center hover:bg-cyan-500/5 transition cursor-pointer flex flex-col items-center justify-center min-h-[250px] w-full block">
+                <svg class="w-12 h-12 text-cyan mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                 <h3 class="text-xl font-bold mb-2">Import Audio File</h3>
                 <p class="text-zinc-500 text-sm">Select any recording to clean it instantly.</p>
-            </div>
-            
-            <!-- Input MUST be outside the clickable area -->
-            <input type="file" id="audioInput" accept="audio/*,video/mp4" class="hidden">
+                <!-- Native input hidden with style instead of tailwind to prevent bugs -->
+                <input type="file" id="audioInput" accept="audio/*,video/mp4,video/webm" style="display:none;">
+            </label>
 
             <!-- Editor Area (Hidden by default) -->
             <div id="editorArea" class="hidden flex flex-col gap-6">
@@ -85,12 +84,12 @@
                 <div class="flex flex-col md:flex-row items-center justify-between gap-6">
                     
                     <!-- Play Button -->
-                    <button id="playBtn" class="w-16 h-16 bg-cyan hover:bg-cyan-400 text-zinc-950 rounded-full flex items-center justify-center transition shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                    <button id="playBtn" class="w-16 h-16 bg-cyan hover:bg-cyan-400 text-zinc-950 rounded-full flex items-center justify-center transition shadow-[0_0_20px_rgba(6,182,212,0.4)] mx-auto md:mx-0">
                         <svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
                     </button>
 
                     <!-- Enhancement Toggle -->
-                    <div class="flex items-center gap-4 bg-zinc-900/80 px-6 py-4 rounded-2xl border border-zinc-800 w-full md:w-auto">
+                    <div class="flex items-center gap-4 bg-zinc-900/80 px-6 py-4 rounded-2xl border border-zinc-800 w-full md:w-auto justify-center">
                         <span class="text-sm font-bold text-zinc-400" id="modeOriginal">Original</span>
                         
                         <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
@@ -101,10 +100,6 @@
                         <span class="text-sm font-bold text-cyan" id="modeCleaned">Cleaned</span>
                     </div>
 
-                </div>
-
-                <div class="text-center mt-4">
-                    <p class="text-xs text-zinc-500">Audio is processed locally in real-time. No servers used.</p>
                 </div>
             </div>
 
@@ -124,13 +119,13 @@
 
         // Audio System Variables
         const audioElement = new Audio();
+        audioElement.crossOrigin = "anonymous";
         let audioCtx, source, analyser;
         let highpass, lowpass, compressor;
         let isPlaying = false;
         let animationId;
 
-        // UI Interactions
-        uploadArea.addEventListener('click', () => audioInput.click());
+        // UI Interactions - Native file input handling
         audioInput.addEventListener('change', (e) => {
             if (e.target.files.length) initStudio(e.target.files[0]);
         });
@@ -141,27 +136,27 @@
             editorArea.classList.remove('hidden');
             fileNameDisplay.innerText = file.name;
             
-            // Safe Load via Object URL (No RAM overflow)
+            // Safe Load via Object URL
             const objectUrl = URL.createObjectURL(file);
             audioElement.src = objectUrl;
             
             // Setup Canvas size
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            
-            // Draw initial flat line
-            drawFlatLine();
+            setTimeout(() => {
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                drawFlatLine();
+            }, 100);
         }
 
         // Setup Web Audio API (Must be triggered on user click)
         function setupAudioNodes() {
-            if (audioCtx) return; // Already setup
+            if (audioCtx) return; 
 
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             source = audioCtx.createMediaElementSource(audioElement);
             analyser = audioCtx.createAnalyser();
             
-            // Studio Filters
+            // Studio Filters for Noise Reduction
             highpass = audioCtx.createBiquadFilter();
             highpass.type = 'highpass';
             highpass.frequency.value = 95;
@@ -177,10 +172,8 @@
             compressor.attack.value = 0.003;
             compressor.release.value = 0.25;
 
-            // Analyser settings for visualizer
             analyser.fftSize = 256;
 
-            // Connect routing based on toggle
             routeAudio();
         }
 
@@ -262,7 +255,7 @@
             return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
         }
 
-        // Custom Visualizer (Super Light on CPU)
+        // Custom Visualizer
         function drawFlatLine() {
             canvasCtx.fillStyle = '#09090b';
             canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
@@ -310,6 +303,7 @@
             isPlaying = false;
             playBtn.innerHTML = '<svg class="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
             if(animationId) cancelAnimationFrame(animationId);
+            audioInput.value = '';
         }
     </script>
 </body>
