@@ -61,8 +61,10 @@
                 <svg class="w-12 h-12 text-cyan mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                 <h3 class="text-xl font-bold mb-2">Import Audio File</h3>
                 <p class="text-zinc-500 text-sm">Select any recording to clean it instantly.</p>
-                <input type="file" id="audioInput" accept="audio/*,video/mp4" class="hidden">
             </div>
+            
+            <!-- Input MUST be outside the clickable area -->
+            <input type="file" id="audioInput" accept="audio/*,video/mp4" class="hidden">
 
             <!-- Editor Area (Hidden by default) -->
             <div id="editorArea" class="hidden flex flex-col gap-6">
@@ -289,7 +291,7 @@
             const sliceWidth = canvas.width * 1.0 / bufferLength;
             let x = 0;
 
-            for (let i = 0; i nil < bufferLength; i++) {
+            for (let i = 0; i < bufferLength; i++) {
                 const v = dataArray[i] / 128.0;
                 const y = v * canvas.height / 2;
                 if (i === 0) canvasCtx.moveTo(x, y);
